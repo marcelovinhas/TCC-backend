@@ -6,6 +6,7 @@ import UsuarioController from './app/controllers/UsuarioController';
 import LoginController from './app/controllers/LoginController';
 import ArquivoController from './app/controllers/ArquivoController';
 import CompromissoController from './app/controllers/CompromissoController';
+import NotificacaoController from './app/controllers/NotificacaoController';
 
 import authMiddleware from './app/middlewares/auth';
 
@@ -29,6 +30,14 @@ routes.get('/compromissos', CompromissoController.index);
 
 // rota para agendamento
 routes.post('/compromissos', CompromissoController.store);
+
+routes.delete('/compromissos/:id', CompromissoController.delete);
+
+// rota para lista de notificações dos compromissos do usuário
+routes.get('/notificacoes', NotificacaoController.index);
+
+// rota para marcar uma notificação como lida, recebendo o id da notificação, precisa passar o id no Insomnia
+routes.put('/notificacoes/:id', NotificacaoController.update);
 
 // rota do multer - imagem, no Insomnia criar post em multipart em vez de JSON
 // single para fazer um upload por vez e não vários e o nome do campo da requisição file

@@ -1,0 +1,13 @@
+
+{{!-- mensagem layout de cancelamento, esse nome tem que estar .handlebars .hbs não funciona --}}
+{{!-- ver essa mensagem em mailtrap.io  --}}
+<strong>Olá, {{ usuario }}!</strong>
+<p>Você cancelou um compromisso, confira os detalhes abaixo:</p>
+<p>
+  {{!-- <strong>Cliente: </strong> {{ usuario }} <br /> --}}
+  <strong>Data/hora: </strong> {{ date }} <br />
+  <br />
+  <small>
+    O horário está novamente disponível para novos eventos.
+  </small>
+</p>
