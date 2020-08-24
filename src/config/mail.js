@@ -5,13 +5,13 @@ criar conta e pegar as informações de host, port, auth (user e pass)
 */
 
 export default {
-  host: 'smtp.mailtrap.io', // endereço
-  port: '2525', // porta
+  host: process.env.MAIL_HOST, // endereço
+  port: process.env.MAIL_PORT, // porta
   secure: false, // se usa ssl ou não
   auth: {
     // autenticação do email
-    user: 'd3e0517cb1dfff', // usuário
-    pass: 'a07d7e2fbcd9c6', // senha
+    user: process.env.MAIL_USER, // usuário
+    pass: process.env.MAIL_PASS, // senha
   },
   default: {
     // configurações padrão

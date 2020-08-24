@@ -4,7 +4,9 @@ import pt from 'date-fns/locale/pt';
 import Usuario from '../models/Usuario';
 import Compromisso from '../models/Compromisso';
 import Notificacao from '../schemas/Notificacao';
-import Mail from '../../lib/Mail';
+
+import CancellationMail from '../jobs/CancellationMail';
+import Queue from '../../lib/Queue';
 // import Arquivo from '../models/Arquivo';
 
 class CompromissoController {
@@ -18,7 +20,7 @@ class CompromissoController {
 
       limit: 5, // no máximo 20 agendamentos por página
       offset: (pagina - 1) * 5, // se estiver na primeira página (1-1)*20 = 0 não pula registros
-      attributes: ['id', 'data'],
+      attributes: ['id', 'data', 'passado', 'cancelavel'],
       // include: [
       //   // para retornar o avatar
       //   {
@@ -109,14 +111,15 @@ class CompromissoController {
     }
 
     // subHours para verificar se o usuário deseja cancelar o agendaento pelo menos duas horas antes do horário marcado
-    const dateWithSub = subHours(compromisso.date, 2);
+    const dateWithSub = subHours(compromisso.data, 2);
     // o campo de data no banco de dados já vem no formato data, não precisa USAR parseISO
 
     // exemplo: agendamento marcado para as 13:00, dateWithSub: 11h, horário do computador é 11:25h
     // no exemplo não pode mais cancelar o agendamento
     if (isBefore(dateWithSub, new Date())) {
       return res.status(401).json({
-        error: 'Faltam uma hora para o evento, você não pode mais cancelar.',
+        error:
+          'Faltam menos de duas horas para o evento, você não pode mais cancelar.',
       });
     }
 
@@ -124,19 +127,30 @@ class CompromissoController {
 
     await compromisso.save();
 
+    /*
+    o tempo de resposta da requisição de cancelamento demora muito mais que os outros
+    é possível tirar o await para diminuir, mas caso haja algum erro nessa parte não saberiamos
+    pois a resposta ja teria retornado, a melhor forma de melhorar o tempo é usar filas ou background jobs
+    tipos de serviço que executam em segundo plano, para coisas que levam mais tempo
+    para isso usa banco redis que é um banco chave valor, não relacional mas sem schema, apenas chave valor
+    por isso, é mais performático que mongodb, docker run --name redisbarber -p 6379:6379 -d -t redis:alpine
+    esse trecho abaixo foi passado para CancellationMail.js
     await Mail.sendMail({
-      to: `${compromisso.usuario.nome} <${compromisso.usuario.email}>`, // para quem vai enviar o email
-      subject: 'Compromisso cancelado.',
-      template: 'cancellation',
-      context: {
-        usuario: compromisso.usuario.nome,
-        date: format(
-          // para definir formato de data
-          compromisso.data, // data que quer formatar
-          "'dia' dd 'de' MMMM', às' H:mm'h'.", // formatação o que está em aspas simples '' sairá escrito literalmente
-          { locale: pt }
-        ),
+      to: `${appointment.provider.name} <${appointment.provider.email}>`, //para quem vai enviar o email
+      subject: 'Agendamento cancelado',
+      template: 'cancellation', //arquivo do template
+      context: { //enviar as variáveis que o template está esperando
+        provider: appointment.provider.name,
+        user: appointment.user.name,
+        date: format(appointment.date, "'dia' dd 'de' MMMM', às' H:mm'h'", {
+          locale: pt,
+        }),
       },
+    });
+    */
+
+    await Queue.add(CancellationMail.key, {
+      compromisso,
     });
 
     return res.json(compromisso);
