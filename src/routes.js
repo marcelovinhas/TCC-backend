@@ -7,6 +7,8 @@ import LoginController from './app/controllers/LoginController';
 import ArquivoController from './app/controllers/ArquivoController';
 import CompromissoController from './app/controllers/CompromissoController';
 import NotificacaoController from './app/controllers/NotificacaoController';
+import LivreController from './app/controllers/LivreController';
+import AgendaController from './app/controllers/AgendaController';
 
 import authMiddleware from './app/middlewares/auth';
 
@@ -25,6 +27,10 @@ routes.use(authMiddleware);
 // rota para atualizar dados
 routes.put('/usuarios', UsuarioController.update);
 
+// rota para listar horários disponíveis do prestador de serviço em um dia
+// em query enviar o campo date no formato timestamp, escrever new Date().getTime() em inspecionar, console em algum site
+routes.get('/usuarios/:usuarioId/livre', LivreController.index);
+
 // rota para listagem
 routes.get('/compromissos', CompromissoController.index);
 
@@ -32,6 +38,9 @@ routes.get('/compromissos', CompromissoController.index);
 routes.post('/compromissos', CompromissoController.store);
 
 routes.delete('/compromissos/:id', CompromissoController.delete);
+
+// rota para listagem de agendamentos do dia do usuário
+routes.get('/agenda', AgendaController.index);
 
 // rota para lista de notificações dos compromissos do usuário
 routes.get('/notificacoes', NotificacaoController.index);
