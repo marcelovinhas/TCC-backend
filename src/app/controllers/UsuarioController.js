@@ -7,6 +7,12 @@ class UsuarioController {
       nome: Yup.string().required(),
       email: Yup.string().email().required(),
       senha: Yup.string().required().min(6),
+      confirmarSenha: Yup.string().when(
+        'senha',
+        (senha, field) =>
+          senha ? field.required().oneOf([Yup.ref('senha')]) : field
+        // oneOf e ref para comparar com o campo password
+      ),
     });
 
     if (!(await schema.isValid(req.body))) {
@@ -22,6 +28,14 @@ class UsuarioController {
       // caso exista informa erro
       return res.status(400).json({ error: 'Email já cadastrado' });
     }
+
+    // const { senha, confirmarSenha } = req.body;
+
+    // if (senha !== confirmarSenha) {
+    //   return res
+    //     .status(400)
+    //     .json({ error: 'Senha e confirmação de senha não conferem' });
+    // }
 
     // retornar para o front-end apenas id, nome e email
     const { id, nome, email } = await Usuario.create(req.body);
