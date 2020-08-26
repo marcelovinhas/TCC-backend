@@ -11,6 +11,7 @@ class Usuario extends Model {
         email: Sequelize.STRING,
         // VIRTUAl é um campo que não vai existir na base de dados, apenas no código
         senha: Sequelize.VIRTUAL,
+        confirmarSenha: Sequelize.VIRTUAL,
         senha_hash: Sequelize.STRING,
       },
       {
