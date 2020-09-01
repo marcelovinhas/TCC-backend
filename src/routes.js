@@ -10,6 +10,8 @@ import NotificacaoController from './app/controllers/NotificacaoController';
 import LivreController from './app/controllers/LivreController';
 import AgendaController from './app/controllers/AgendaController';
 
+import EsquecerSenhaController from './app/controllers/EsquecerSenhaController';
+import ResetarSenhaController from './app/controllers/ResetarSenhaController';
 import authMiddleware from './app/middlewares/auth';
 
 const routes = new Router();
@@ -20,6 +22,12 @@ routes.post('/usuarios', UsuarioController.store);
 
 // rota para logar
 routes.post('/login', LoginController.store);
+
+// ROTA ESQUECI A SENHA
+routes.post('/esquecer', EsquecerSenhaController.store);
+
+// ROTA RESETAR SENHA
+routes.post('/resetar', ResetarSenhaController.store);
 
 // como está depois das duas rotas anteriores, só vai valer pras rotas que vem depois
 routes.use(authMiddleware);

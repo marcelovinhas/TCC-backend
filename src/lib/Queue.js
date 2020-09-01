@@ -1,9 +1,10 @@
 // ARQUIVO DE CONFIGURAÇÃO DE FILA - yarn add bee-queue
 import Bee from 'bee-queue';
 import CancellationMail from '../app/jobs/CancellationMail';
+import EsquecerSenhaMail from '../app/jobs/EsquecerSenhaMail';
 import redisConfig from '../config/redis';
 
-const jobs = [CancellationMail]; // sempre que tiver um novo job, importa para o vetor CancellationMail
+const jobs = [CancellationMail, EsquecerSenhaMail]; // sempre que tiver um novo job, importa para o vetor CancellationMail
 
 class Queue {
   constructor() {
