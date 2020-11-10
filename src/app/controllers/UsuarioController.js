@@ -38,9 +38,9 @@ class UsuarioController {
     // }
 
     // retornar para o front-end apenas id, nome e email
-    const { id, nome, email } = await Usuario.create(req.body);
+    const { id, nome, email, amigo } = await Usuario.create(req.body);
 
-    return res.json({ id, nome, email });
+    return res.json({ id, nome, email, amigo });
   }
 
   // edição dos dados do usuário

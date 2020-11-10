@@ -9,6 +9,7 @@ import CompromissoController from './app/controllers/CompromissoController';
 import NotificacaoController from './app/controllers/NotificacaoController';
 import LivreController from './app/controllers/LivreController';
 import AgendaController from './app/controllers/AgendaController';
+import AmigoController from './app/controllers/AmigoController';
 
 import EsquecerSenhaController from './app/controllers/EsquecerSenhaController';
 import ResetarSenhaController from './app/controllers/ResetarSenhaController';
@@ -35,9 +36,12 @@ routes.use(authMiddleware);
 // rota para atualizar dados
 routes.put('/usuarios', UsuarioController.update);
 
+// NOVO - rota para listar os amigos
+routes.get('/amigos', AmigoController.index);
+
 // rota para listar horários disponíveis do prestador de serviço em um dia
 // em query enviar o campo date no formato timestamp, escrever new Date().getTime() em inspecionar, console em algum site
-routes.get('/usuarios/:usuarioId/livre', LivreController.index);
+routes.get('/amigos/:amigoId/livre', LivreController.index);
 
 // rota para listagem
 routes.get('/compromissos', CompromissoController.index);

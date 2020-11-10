@@ -23,7 +23,7 @@ class LivreController {
 
     const compromissos = await Compromisso.findAll({
       where: {
-        usuario_id: req.params.usuarioId,
+        amigo_id: req.params.amigoId,
         canceled_at: null,
         data: {
           [Op.between]: [startOfDay(procurarData), endOfDay(procurarData)],
@@ -46,6 +46,7 @@ class LivreController {
       '18:00',
       '19:00',
       '20:00',
+      '21:00',
     ];
 
     const livre = agenda.map((time) => {

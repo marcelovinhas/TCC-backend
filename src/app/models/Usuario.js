@@ -15,6 +15,7 @@ class Usuario extends Model {
         senha_hash: Sequelize.STRING,
         senha_reset_token: Sequelize.STRING,
         senha_reset_expira: Sequelize.DATE,
+        amigo: Sequelize.BOOLEAN,
       },
       {
         sequelize, // o sequelize recebido no parâmetro static init (sequelize) precisa ser passado

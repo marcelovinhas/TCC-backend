@@ -16,11 +16,11 @@ const NotificacaoSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    // usuario: {
-    //   // id do usuário
-    //   type: Number,
-    //   required: true,
-    // },
+    usuario: {
+      // id do usuário
+      type: Number,
+      required: true,
+    },
     read: {
       // se a notificação foi lida ou não
       type: Boolean,

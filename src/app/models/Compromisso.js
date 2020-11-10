@@ -8,6 +8,7 @@ class Compromisso extends Model {
         // super = Model, está chamando o método init da classe Model
         // os campos dentro do model, não precisam ser um reflexo dos campos da base de dados
         data: Sequelize.DATE,
+        assunto: Sequelize.STRING,
         canceled_at: Sequelize.DATE,
         passado: {
           // agendamento passado para mostrar no front end
@@ -21,7 +22,7 @@ class Compromisso extends Model {
           // retorna se o agendamento pode ser cancelado (no máximo até duas horas antes)
           type: Sequelize.VIRTUAL,
           get() {
-            return isBefore(new Date(), subHours(this.data, 2));
+            return isBefore(new Date(), subHours(this.data, 1));
           },
         },
       },
@@ -36,6 +37,7 @@ class Compromisso extends Model {
   // relacionamento com a tabela
   static associate(models) {
     this.belongsTo(models.Usuario, { foreignKey: 'usuario_id', as: 'usuario' });
+    this.belongsTo(models.Usuario, { foreignKey: 'amigo_id', as: 'amigo' });
   }
 }
 

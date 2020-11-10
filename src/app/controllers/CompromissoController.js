@@ -1,6 +1,7 @@
 import * as Yup from 'yup';
 import { startOfHour, parseISO, isBefore, format, subHours } from 'date-fns';
 import pt from 'date-fns/locale/pt';
+
 import Usuario from '../models/Usuario';
 import Compromisso from '../models/Compromisso';
 import Notificacao from '../schemas/Notificacao';
@@ -17,10 +18,17 @@ class CompromissoController {
     const compromissos = await Compromisso.findAll({
       where: { usuario_id: req.usuarioId, canceled_at: null },
       order: ['data'],
+      attributes: ['id', 'data', 'assunto', 'passado', 'cancelavel'],
+      limit: 10, // no máximo 20 agendamentos por página
+      offset: (pagina - 1) * 10, // se estiver na primeira página (1-1)*20 = 0 não pula registros
+      include: [
+        {
+          model: Usuario,
+          as: 'amigo',
+          attributes: ['id', 'nome'],
+        },
+      ],
 
-      limit: 5, // no máximo 20 agendamentos por página
-      offset: (pagina - 1) * 5, // se estiver na primeira página (1-1)*20 = 0 não pula registros
-      attributes: ['id', 'data', 'passado', 'cancelavel'],
       // include: [
       //   // para retornar o avatar
       //   {
@@ -36,7 +44,7 @@ class CompromissoController {
 
   async store(req, res) {
     const schema = Yup.object().shape({
-      usuario_id: Yup.number(),
+      amigo_id: Yup.number().required(),
       data: Yup.date().required(),
     });
 
@@ -44,7 +52,23 @@ class CompromissoController {
       return res.status(400).json({ error: 'Falha na validação' });
     }
 
-    const { data } = req.body;
+    const { amigo_id, data, assunto } = req.body;
+
+    const ehAmigo = await Usuario.findOne({
+      where: { id: amigo_id, amigo: true },
+    });
+
+    if (!ehAmigo) {
+      return res.status(401).json({ error: 'EH AMIGO' });
+    }
+
+    const usuario = await Usuario.findByPk(req.usuarioId); // variável para colocar na notificação ${user.name}
+
+    if (usuario.id === req.amigo_id) {
+      return res.status(401).json({
+        error: 'Vocês não são amigos',
+      });
+    }
 
     // startOfHour pega o início da hora, se colocar 19:30 ele transforma em 19:00
     // parseIso transforma a string de data do Insomnia objeto date para o js
@@ -58,6 +82,7 @@ class CompromissoController {
     // verifica se a data que o usuário deseja marcar está livre, com intervalo de 1h
     const checkHorario = await Compromisso.findOne({
       where: {
+        amigo_id,
         canceled_at: null, // verifica se o agendamento estiver cancelado
         data: hourStart, // verifica se a data digitada não é quebrada
       },
@@ -73,10 +98,12 @@ class CompromissoController {
     // se passou pela verificação cria o agendamento
     const compromisso = await Compromisso.create({
       usuario_id: req.usuarioId, // pega o user de autenticação em auth.js
+      amigo_id,
+      assunto,
       data: hourStart, // verifica se a data digitada não é quebrada
     });
 
-    const usuario = await Usuario.findByPk(req.usuarioId); // variável para colocar na notificação ${user.name}
+    // const usuario = await Usuario.findByPk(req.usuarioId); // variável para colocar na notificação ${user.name}
     const dataFormatada = format(
       // para definir formato de data
       hourStart, // data que quer formatar
@@ -86,6 +113,7 @@ class CompromissoController {
 
     await Notificacao.create({
       conteudo: `${usuario.nome} marcou um novo compromisso ${dataFormatada}.`,
+      usuario: amigo_id,
     });
 
     return res.json(compromisso);
@@ -97,8 +125,13 @@ class CompromissoController {
         // incluir as informações do prestador de serviço para envio de email
         {
           model: Usuario,
-          as: 'usuario',
+          as: 'amigo',
           attributes: ['nome', 'email'], // informações úteis para o email
+        },
+        {
+          model: Usuario,
+          as: 'usuario',
+          attributes: ['nome'],
         },
       ],
     }); // busca os dados do agendamento
@@ -111,7 +144,7 @@ class CompromissoController {
     }
 
     // subHours para verificar se o usuário deseja cancelar o agendaento pelo menos duas horas antes do horário marcado
-    const dateWithSub = subHours(compromisso.data, 2);
+    const dateWithSub = subHours(compromisso.data, 1);
     // o campo de data no banco de dados já vem no formato data, não precisa USAR parseISO
 
     // exemplo: agendamento marcado para as 13:00, dateWithSub: 11h, horário do computador é 11:25h

@@ -29,6 +29,11 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: false,
       },
+      amigo: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: true,
+        allowNull: false,
+      },
     });
   },
 

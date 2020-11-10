@@ -14,14 +14,15 @@ class CancellationMail {
     const { compromisso } = data; // data é a informação para o envio de email
 
     await Mail.sendMail({
-      to: `${compromisso.usuario.nome} <${compromisso.usuario.email}>`, // para quem vai enviar o email
-      subject: 'Agendamento cancelado',
+      to: `${compromisso.amigo.nome} <${compromisso.amigo.email}>`, // para quem vai enviar o email
+      subject: 'Compromisso cancelado',
       template: 'cancellation', // arquivo do template
       context: {
         // enviar as variáveis que o template está esperando
-
+        amigo: compromisso.amigo.nome,
         usuario: compromisso.usuario.nome,
-        date: format(
+        assunto: compromisso.assunto,
+        data: format(
           parseISO(compromisso.data),
           "'dia' dd 'de' MMMM', às' H:mm'h'",
           {
