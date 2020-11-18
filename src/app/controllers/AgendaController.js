@@ -8,7 +8,7 @@ import Usuario from '../models/Usuario';
 class AgendaController {
   async index(req, res) {
     const checarAmigo = await Usuario.findOne({
-      where: { id: req.usuarioId, amigo: true },
+      where: { id: req.usuarioId },
     });
 
     if (!checarAmigo) {

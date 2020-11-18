@@ -188,6 +188,83 @@ class CompromissoController {
 
     return res.json(compromisso);
   }
+
+  async sozinhostore(req, res) {
+    const schema = Yup.object().shape({
+      amigo_id: Yup.number(),
+      data: Yup.date().required(),
+    });
+
+    if (!(await schema.isValid(req.body))) {
+      return res.status(400).json({ error: 'Falha na validação' });
+    }
+
+    const { amigo_id, data, assunto } = req.body;
+
+    const ehAmigo = await Usuario.findOne({
+      where: { id: amigo_id, amigo: false },
+    });
+
+    if (!ehAmigo) {
+      return res.status(401).json({ error: 'EH AMIGO' });
+    }
+
+    const usuario = await Usuario.findByPk(req.usuarioId); // variável para colocar na notificação ${user.name}
+
+    if (usuario.id === req.amigo_id) {
+      return res.status(401).json({
+        error: 'Vocês não são amigos',
+      });
+    }
+
+    // startOfHour pega o início da hora, se colocar 19:30 ele transforma em 19:00
+    // parseIso transforma a string de data do Insomnia objeto date para o js
+    const hourStart = startOfHour(parseISO(data));
+
+    // verifica se a data do agendamento desejado com a data atual, ve se a data já passou, é antiga
+    if (isBefore(hourStart, new Date())) {
+      return res.status(400).json({ error: 'A data já passou.' });
+    }
+
+    // verifica se a data que o usuário deseja marcar está livre, com intervalo de 1h
+    const checkHorario = await Compromisso.findOne({
+      where: {
+        amigo_id,
+        canceled_at: null, // verifica se o agendamento estiver cancelado
+        data: hourStart, // verifica se a data digitada não é quebrada
+      },
+    });
+
+    // se a data não estiver vaga
+    if (checkHorario) {
+      return res
+        .status(400)
+        .json({ error: 'Há outro compromisso já marcado nesse horário.' });
+    }
+
+    // se passou pela verificação cria o agendamento
+    const compromisso = await Compromisso.create({
+      usuario_id: req.usuarioId, // pega o user de autenticação em auth.js
+      amigo_id,
+      assunto,
+      data: hourStart, // verifica se a data digitada não é quebrada
+    });
+
+    // const usuario = await Usuario.findByPk(req.usuarioId); // variável para colocar na notificação ${user.name}
+    const dataFormatada = format(
+      // para definir formato de data
+      hourStart, // data que quer formatar
+      "'dia' dd 'de' MMMM', às' H:mm'h'", // formatação o que está em aspas simples '' sairá escrito literalmente
+      { locale: pt }
+    );
+
+    await Notificacao.create({
+      conteudo: `${usuario.nome} marcou um novo compromisso ${dataFormatada}.`,
+      usuario: amigo_id,
+    });
+
+    return res.json(compromisso);
+  }
 }
 
 export default new CompromissoController();

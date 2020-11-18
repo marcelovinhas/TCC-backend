@@ -39,6 +39,12 @@ routes.put('/usuarios', UsuarioController.update);
 // NOVO - rota para listar os amigos
 routes.get('/amigos', AmigoController.index);
 
+// NOVO2 - rota para listar SOZINHO
+routes.get('/sozinho', AmigoController.sozinho);
+
+// NOVO2 - rota para agendamento SOZINHO
+routes.post('/compromissossozinho', CompromissoController.sozinhostore);
+
 // rota para listar horários disponíveis do prestador de serviço em um dia
 // em query enviar o campo date no formato timestamp, escrever new Date().getTime() em inspecionar, console em algum site
 routes.get('/amigos/:amigoId/livre', LivreController.index);
